@@ -1,0 +1,5 @@
+#Applications
+*.exe
+
+#Create files
+*.bmp
