@@ -6,7 +6,7 @@ struct FileHeader {
     int sizeOfFile;
     short reserved1;
     short reserved2;
-    int dataOffset;
+    int offset;
 };
 
 struct PictureHeader {
@@ -39,45 +39,45 @@ void readAndPrintHeaders (FileHeader& fileHeader, PictureHeader& pictureHeader, 
     fread(&fileHeader.reserved2, sizeof(fileHeader.reserved2), 1,  input);
     std::cout << "reserved2: " << fileHeader.reserved2 << std::endl;
 
-    fread(&fileHeader.dataOffset, sizeof(fileHeader.dataOffset), 1,  input);
-    std::cout << "dataOffset: " << fileHeader.dataOffset << std::endl;
+    fread(&fileHeader.offset, sizeof(fileHeader.offset), 1,  input);
+    std::cout << "offset: " << fileHeader.offset << std::endl;
 
     fseek(input, 14, SEEK_SET);
 
     std::cout << std::endl << "Picture Header:" << std::endl;
 
     fread(&pictureHeader.biSize, sizeof(pictureHeader.biSize), 1,  input);
-    std::cout << "biSize: " << pictureHeader.biSize << std::endl;
+    std::cout << "sizeOfHeader: " << pictureHeader.biSize << std::endl;
    
     fread(&pictureHeader.biWidth, sizeof(pictureHeader.biWidth), 1,  input);
-    std::cout << "biWidth: " << pictureHeader.biWidth << " pks" << std::endl;
+    std::cout << "width: " << pictureHeader.biWidth << " pks" << std::endl;
 
     fread(&pictureHeader.biHeight, sizeof(pictureHeader.biHeight), 1,  input);
-    std::cout << "biHeight: " << pictureHeader.biHeight << " pks" << std::endl;
+    std::cout << "height: " << pictureHeader.biHeight << " pks" << std::endl;
 
     fread(&pictureHeader.biPlanes, sizeof(pictureHeader.biPlanes), 1,  input);
-    std::cout << "biPlanes: " << pictureHeader.biPlanes << std::endl;
+    std::cout << "planes: " << pictureHeader.biPlanes << std::endl;
     
     fread(&pictureHeader.biBitCount, sizeof(pictureHeader.biBitCount), 1,  input);
-    std::cout << "biBitCount: " << pictureHeader.biBitCount << std::endl;    
+    std::cout << "bitCount: " << pictureHeader.biBitCount << std::endl;    
 
     fread(&pictureHeader.biCompression, sizeof(pictureHeader.biCompression), 1,  input);
-    std::cout << "biCompression: " << pictureHeader.biCompression << std::endl;
+    std::cout << "compression: " << pictureHeader.biCompression << std::endl;
 
     fread(&pictureHeader.biSizeImage, sizeof(pictureHeader.biSizeImage), 1,  input);
-    std::cout << "biSizeImage: " << pictureHeader.biSizeImage << std::endl;
+    std::cout << "sizeImage: " << pictureHeader.biSizeImage << std::endl;
 
     fread(&pictureHeader.biXPelsPerMeter, sizeof(pictureHeader.biXPelsPerMeter), 1,  input);
-    std::cout << "biXPelsPerMeter: " << pictureHeader.biXPelsPerMeter << std::endl;
+    std::cout << "XPelsPerMeter: " << pictureHeader.biXPelsPerMeter << std::endl;
 
     fread(&pictureHeader.biYPelsPerMeter, sizeof(pictureHeader.biYPelsPerMeter), 1,  input);
-    std::cout << "biYPelsPerMeter: " << pictureHeader.biYPelsPerMeter << std::endl;
+    std::cout << "YPelsPerMeter: " << pictureHeader.biYPelsPerMeter << std::endl;
 
     fread(&pictureHeader.biClrUsed, sizeof(pictureHeader.biClrUsed), 1,  input);
-    std::cout << "biClrUsed: " << pictureHeader.biClrUsed << std::endl;
+    std::cout << "clrUsed: " << pictureHeader.biClrUsed << std::endl;
 
     fread(&pictureHeader.biClrImportant, sizeof(pictureHeader.biClrImportant), 1,  input);
-    std::cout << "biClrImportant: " << pictureHeader.biClrImportant << std::endl;
+    std::cout << "clrImportant: " << pictureHeader.biClrImportant << std::endl;
 }
 
 void writeHeadersInFile (FileHeader& fileHeader, PictureHeader& pictureHeader, FILE* output)
@@ -88,7 +88,7 @@ void writeHeadersInFile (FileHeader& fileHeader, PictureHeader& pictureHeader, F
     fwrite(&fileHeader.sizeOfFile, sizeof(fileHeader.sizeOfFile), 1,  output);
     fwrite(&fileHeader.reserved1, sizeof(fileHeader.reserved1), 1,  output);
     fwrite(&fileHeader.reserved2, sizeof(fileHeader.reserved2), 1,  output);
-    fwrite(&fileHeader.dataOffset, sizeof(fileHeader.dataOffset), 1,  output);
+    fwrite(&fileHeader.offset, sizeof(fileHeader.offset), 1,  output);
 
     fseek(output, 14, SEEK_SET);
 
@@ -109,7 +109,7 @@ void createNegativeImage (FILE* input, FILE* output, const FileHeader& fileHeade
 {
     int bitColor;
 
-    for (int i = fileHeader.dataOffset; i < fileHeader.sizeOfFile; ++i)
+    for (int i = fileHeader.offset; i < fileHeader.sizeOfFile; ++i)
     {
         fseek(input, i, SEEK_SET);
         fseek(output, i, SEEK_SET);
