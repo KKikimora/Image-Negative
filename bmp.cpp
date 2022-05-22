@@ -23,30 +23,8 @@ struct PictureHeader {
     int biClrImportant;
 };
 
-struct RGB
+void readAndPrintHeaders (FileHeader& fileHeader, PictureHeader& pictureHeader, FILE* input)
 {
-    char R;
-    char G;
-    char B;
-};
-
-int main (int arc, char * argv[])
-{
-    const char* fileInputName = argv[1];
-
-    FILE *input = fopen(fileInputName, "r");
-
-    if(input == nullptr)
-    {
-        std::cout << "Error of read " << fileInputName << " file" << std::endl;
-    }
-    else
-    {
-         std::cout << "File " << fileInputName << " was open" << std::endl;
-    }
-
-    FileHeader fileHeader{};
-    
     std::cout << std::endl << "File Header:" << std::endl;
 
     fread(&fileHeader.type, sizeof(fileHeader.type), 1,  input);
@@ -65,8 +43,6 @@ int main (int arc, char * argv[])
     std::cout << "dataOffset: " << fileHeader.dataOffset << std::endl;
 
     fseek(input, 14, SEEK_SET);
-
-    PictureHeader pictureHeader{};
 
     std::cout << std::endl << "Picture Header:" << std::endl;
 
@@ -102,18 +78,10 @@ int main (int arc, char * argv[])
 
     fread(&pictureHeader.biClrImportant, sizeof(pictureHeader.biClrImportant), 1,  input);
     std::cout << "biClrImportant: " << pictureHeader.biClrImportant << std::endl;
+}
 
-    FILE *output = fopen("image_nagative.bmp", "wb");
-    
-    if(output == nullptr)
-    {
-        std::cout << "Error of write image_nagative.bmp file" << std::endl;
-    }
-    else
-    {
-         std::cout << "File image_nagative.bmp was open" << std::endl;
-    }
-
+void writeHeadersInFile (FileHeader& fileHeader, PictureHeader& pictureHeader, FILE* output)
+{
     fseek(output, 0, SEEK_SET);
 
     fwrite(&fileHeader.type, sizeof(fileHeader.type), 1,  output);
@@ -135,17 +103,61 @@ int main (int arc, char * argv[])
     fwrite(&pictureHeader.biYPelsPerMeter, sizeof(pictureHeader.biYPelsPerMeter), 1,  output);
     fwrite(&pictureHeader.biClrUsed, sizeof(pictureHeader.biClrUsed), 1,  output);
     fwrite(&pictureHeader.biClrImportant, sizeof(pictureHeader.biClrImportant), 1,  output);
-        
+}
+
+void createNegativeImage (FILE* input, FILE* output, const FileHeader& fileHeader)
+{
     int bitColor;
+
     for (int i = fileHeader.dataOffset; i < fileHeader.sizeOfFile; ++i)
     {
         fseek(input, i, SEEK_SET);
         fseek(output, i, SEEK_SET);
-        
+
         fread(&bitColor, 3, 1, input);
         bitColor = INT_MAX - bitColor;
         fwrite(&bitColor, 3, 1, output);
     }
+
+    std::cout << std::endl << "Negative Image was created" << std::endl;
+}
+
+int main (int arc, char * argv[])
+{
+    const char* fileInputName = argv[1];
+
+    FILE *input = fopen(fileInputName, "r");
+
+    if(input == nullptr)
+    {
+        std::cout << "Error of read " << fileInputName << " file" << std::endl;
+        return 1;
+    }
+    else
+    {
+         std::cout << "File " << fileInputName << " was open" << std::endl;
+    }
+
+    FileHeader fileHeader{};
+    PictureHeader pictureHeader{};
+
+    readAndPrintHeaders(fileHeader, pictureHeader, input);
+
+    FILE *output = fopen("image_nagative.bmp", "wb");
+    
+    if(output == nullptr)
+    {
+        std::cout << std::endl << "Error of write image_nagative.bmp file" << std::endl;
+        return 1;
+    }
+    else
+    {
+         std::cout << std::endl << "File image_nagative.bmp was open" << std::endl;
+    }
+
+    writeHeadersInFile(fileHeader, pictureHeader, output);
+   
+    createNegativeImage(input, output, fileHeader);
 
     fclose(output);
     fclose(input);
