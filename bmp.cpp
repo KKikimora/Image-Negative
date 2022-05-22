@@ -64,6 +64,8 @@ int main (int arc, char * argv[])
     fread(&fileHeader.dataOffset, sizeof(fileHeader.dataOffset), 1,  input);
     std::cout << "dataOffset: " << fileHeader.dataOffset << std::endl;
 
+    fseek(input, 14, SEEK_SET);
+
     PictureHeader pictureHeader{};
 
     std::cout << std::endl << "Picture Header:" << std::endl;
@@ -101,7 +103,7 @@ int main (int arc, char * argv[])
     fread(&pictureHeader.biClrImportant, sizeof(pictureHeader.biClrImportant), 1,  input);
     std::cout << "biClrImportant: " << pictureHeader.biClrImportant << std::endl;
 
-    FILE *output = fopen("image_nagative.bmp", "bw");
+    FILE *output = fopen("image_nagative.bmp", "wb");
     
     if(output == nullptr)
     {
@@ -112,11 +114,15 @@ int main (int arc, char * argv[])
          std::cout << "File image_nagative.bmp was open" << std::endl;
     }
 
+    fseek(output, 0, SEEK_SET);
+
     fwrite(&fileHeader.type, sizeof(fileHeader.type), 1,  output);
     fwrite(&fileHeader.sizeOfFile, sizeof(fileHeader.sizeOfFile), 1,  output);
     fwrite(&fileHeader.reserved1, sizeof(fileHeader.reserved1), 1,  output);
     fwrite(&fileHeader.reserved2, sizeof(fileHeader.reserved2), 1,  output);
     fwrite(&fileHeader.dataOffset, sizeof(fileHeader.dataOffset), 1,  output);
+
+    fseek(output, 14, SEEK_SET);
 
     fwrite(&pictureHeader.biSize, sizeof(pictureHeader.biSize), 1,  output); 
     fwrite(&pictureHeader.biWidth, sizeof(pictureHeader.biWidth), 1,  output);
@@ -130,6 +136,18 @@ int main (int arc, char * argv[])
     fwrite(&pictureHeader.biClrUsed, sizeof(pictureHeader.biClrUsed), 1,  output);
     fwrite(&pictureHeader.biClrImportant, sizeof(pictureHeader.biClrImportant), 1,  output);
         
+    int bitColor;
+    for (int i = fileHeader.dataOffset; i < fileHeader.sizeOfFile; ++i)
+    {
+        fseek(input, i, SEEK_SET);
+        fseek(output, i, SEEK_SET);
+        
+        fread(&bitColor, 3, 1, input);
+        bitColor = INT_MAX - bitColor;
+        fwrite(&bitColor, 3, 1, output);
+    }
+
+    fclose(output);
     fclose(input);
 
     return 0;
